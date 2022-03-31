@@ -33,11 +33,17 @@ public class Juego extends SurfaceView implements SurfaceHolder.Callback, Surfac
     //Actores
     private Fondo fondo;
     private Personaje jill;
+    private Enemigo zombie;
 
 
     /*Array de Touch */
     private ArrayList<Click> toques = new ArrayList();
-    boolean hayToque=false;
+    boolean hayToque = false;
+
+    private int estado_jill = 1;
+    private final float VELOCIDAD_HORIZONTAL = GameActivity.anchoPantalla/10/BucleJuego.MAX_FPS;
+    private final float VELOCIDAD_VERTICAL = GameActivity.altoPantalla/10/BucleJuego.MAX_FPS;
+
 
     //        fondo = new Fondo(this);
 
@@ -61,13 +67,16 @@ public class Juego extends SurfaceView implements SurfaceHolder.Callback, Surfac
             controlesJuego.renderizarBotones(canvas, myPaint);
 
             jill.dibujarPersonaje(canvas);
+            zombie.dibujarPersonaje(canvas);
+            actualizar();
 
         }
 
         //Esto es de ejemplo deberia de ir en el metodo de actualizar
-        if (contadorFrames % 3 == 0) {
-            jill.caminar();
-        }
+        //if (contadorFrames % 3 == 0) {
+        //    jill.caminar();
+        //    zombie.caminar();
+       // }
     }
 
 
@@ -78,7 +87,7 @@ public class Juego extends SurfaceView implements SurfaceHolder.Callback, Surfac
         fondo = new Fondo(getContext());
         controlesJuego = new Controles(getContext());
         jill = new Personaje(getContext(), GameActivity.anchoPantalla / 10 * 3, GameActivity.altoPantalla / 10 * 8, R.drawable.jill);
-
+        zombie = new Enemigo(getContext(), GameActivity.anchoPantalla / 10 * 9, GameActivity.altoPantalla / 10 * 8, R.drawable.nemesis);
 
         // creamos el game loop
         bucle = new BucleJuego(getHolder(), this);
@@ -123,8 +132,8 @@ public class Juego extends SurfaceView implements SurfaceHolder.Callback, Surfac
                 }
 
                 //se comprueba si se ha pulsado
-                for(BotonControl valor: controlesJuego.getBotones().values()){
-                    controlesJuego.comprobarSiEsPulsado(x,y,valor);
+                for (BotonControl valor : controlesJuego.getBotones().values()) {
+                    controlesJuego.comprobarSiEsPulsado(x, y, valor);
                 }
                 break;
 
@@ -132,8 +141,61 @@ public class Juego extends SurfaceView implements SurfaceHolder.Callback, Surfac
                 synchronized (this) {
                     toques.remove(index);
                 }
+
+                //se comprueba si se ha soltado el botón
+                for (BotonControl valor : controlesJuego.getBotones().values()) {
+                    controlesJuego.comprueba_soltado(toques, valor);
+                }
+                break;
+
+            case MotionEvent.ACTION_UP:
+                synchronized (this) {
+                    toques.clear();
+                }
+
+                hayToque = false;
+                //se comprueba si se ha soltado el botón
+                for (BotonControl valor : controlesJuego.getBotones().values()) {
+                    controlesJuego.comprueba_soltado(toques, valor);
+                }
+                break;
         }
         return true;
     }
 
+    public void actualizar(){
+        contadorFrames++;
+        //Jill se mueve a la izquierda
+        if (controlesJuego.getBotones().get("left").isPulsado()) {
+            if (jill.getCoordenadaX() > 0)
+                jill.setCoordenadaX((int) (jill.getCoordenadaX() - VELOCIDAD_HORIZONTAL));
+                jill.setDireccion(Personaje.DIRECCION_IZQUIERDA);
+                jill.caminar();
+
+        }
+
+        //Jill se mueve a la derecha
+        if (controlesJuego.getBotones().get("right").isPulsado()) {
+            if (jill.getCoordenadaX() < GameActivity.anchoPantalla - jill.getImagen().getWidth())
+                jill.setCoordenadaX((int) (jill.getCoordenadaX() + VELOCIDAD_HORIZONTAL));
+                jill.setDireccion(Personaje.DIRECCION_DERECHA);
+                jill.caminar();
+        }
+
+
+        //Jill salta
+        if (controlesJuego.getBotones().get("up").isPulsado()) {
+            if (jill.getCoordenadaY() < GameActivity.altoPantalla - jill.getImagen().getHeight())
+
+            jill.caminar();
+        }
+
+        if (controlesJuego.getBotones().get("shoot").isPulsado()) {
+            if (jill.getCoordenadaY() < GameActivity.altoPantalla - jill.getImagen().getHeight())
+
+                jill.caminar();
+        }
+    }
 }
+
+

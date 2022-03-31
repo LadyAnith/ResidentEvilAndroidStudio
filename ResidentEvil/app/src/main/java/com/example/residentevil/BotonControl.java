@@ -7,7 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 
 public class BotonControl extends RecursoInterfazUsuario {
-    public boolean pulsado = false; //indica si el control está pulsado o no
+    public boolean pulsado; //indica si el control está pulsado o no
 
     public BotonControl(Context c, int x, int y, int recurso) {
         super(c, x, y, recurso);
@@ -24,5 +24,6 @@ public class BotonControl extends RecursoInterfazUsuario {
     public void setPulsado(boolean pulsado) {
         this.pulsado = pulsado;
     }
+
 }
 

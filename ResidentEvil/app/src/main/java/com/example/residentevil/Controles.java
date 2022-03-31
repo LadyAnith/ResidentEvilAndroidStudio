@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -62,15 +63,33 @@ public class Controles {
     public void comprobarSiEsPulsado(int x, int y, BotonControl button){
         button.getCoordenadaY();
         button.getCoordenadaX();
-        button.getWidth();
+        int n = button.getImagen().getWidth();
 
-        if(x>button.getCoordenadaX() && x<button.getCoordenadaX()+ button.getWidth() &&
-                y>button.getCoordenadaY() && y<button.getCoordenadaY()+ button.getHeight()){
+        if(x>button.getCoordenadaX() && x<button.getCoordenadaX()+ button.getImagen().getWidth() &&
+                y>button.getCoordenadaY() && y<button.getCoordenadaY()+ button.getImagen().getHeight()){
             button.setPulsado(true);
+            boolean b = button.isPulsado();
             Log.d(TAG, "BOTOOOOOOOOOONN PULSADOOOOOOOOOOOO");
         }
 
         Log.d(TAG, "BOTOOOOOOOOOONN NOOOOOOOOOOOOOOOOOOO PULSADOOOOOOOOOOOO");
+    }
+
+    public void comprueba_soltado(ArrayList<Click> lista,BotonControl button){
+        boolean b = button.isPulsado();
+        int n = button.getImagen().getWidth();
+
+        boolean aux=false;
+        for(Click c:lista){
+            if(c.x>button.getCoordenadaX() && c.x<button.getCoordenadaX()+ button.getImagen().getWidth() && c.y>button.getCoordenadaY() && c.y<button.getCoordenadaY()+ button.getImagen().getHeight()) {
+                aux = true;
+                Log.d(TAG, "BOTOOOOOOOOOONN SOLTADOOOOOOOOOOOO");
+            }
+        }
+        if(!aux){
+            button.setPulsado(false);
+        }
+        Log.d(TAG, "BOTOOOOOOOOOONN NO FUFAA");
     }
 
 
