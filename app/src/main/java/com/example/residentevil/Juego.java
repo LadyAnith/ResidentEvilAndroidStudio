@@ -47,7 +47,7 @@ public class Juego extends SurfaceView implements SurfaceHolder.Callback, Surfac
     private final float VELOCIDAD_VERTICAL = GameActivity.altoPantalla/10/BucleJuego.MAX_FPS;
 
     /* Disparos */
-    private ArrayList<Disparo> lista_disparos=new ArrayList<Disparo>();
+    private ArrayList<Disparo> lista_disparos=new ArrayList();
 
     private int frames_para_nuevo_disparo=0;
     //entre disparo y disparo deben pasar al menos MAX_FRAMES_ENTRE_DISPARO
@@ -56,6 +56,7 @@ public class Juego extends SurfaceView implements SurfaceHolder.Callback, Surfac
 
     /* sonidos */
     MediaPlayer mediaPlayer;
+    private MediaPlayer media;
 
     /* Enemigos */
     public static Bitmap zombie, nemesis;
@@ -264,7 +265,11 @@ public class Juego extends SurfaceView implements SurfaceHolder.Callback, Surfac
         //Los enemigos persiguen al jugador
         for(Enemigo e: lista_enemigos){
             e.actualizaCoordenadas(jill);
+            if(e.getTipo_enemigo() == 0){
+
+            }
         }
+
     }
 
     public void creaDisparo(){
@@ -293,7 +298,7 @@ public class Juego extends SurfaceView implements SurfaceHolder.Callback, Surfac
 
     public void crearNuevoEnemigo(){
         if(TOTAL_ENEMIGOS-enemigos_creados>0) {
-            lista_enemigos.add(new Enemigo(getContext(), GameActivity.anchoPantalla / 10 * 9, GameActivity.altoPantalla / 10 * 8, R.drawable.zombie, nivel));
+            lista_enemigos.add(new Enemigo(getContext(), GameActivity.anchoPantalla / 2 * 10, GameActivity.altoPantalla - zombie.getHeight(), R.drawable.zombie, nivel));
             enemigos_creados++;
         }
     }

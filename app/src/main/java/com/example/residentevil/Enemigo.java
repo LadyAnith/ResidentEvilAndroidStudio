@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.media.MediaPlayer;
 
 public class Enemigo extends RecursoInterfazUsuario {
     public static final int DIRECCION_ABAJO = 0;
@@ -28,6 +29,7 @@ public class Enemigo extends RecursoInterfazUsuario {
 
     public float direccion_horizontal=1; //inicialmente derecha
     private int nivel;
+    MediaPlayer media;
 
     public Enemigo(Context context, int x, int y, int recurso, int nivel) {
 
@@ -56,12 +58,26 @@ public class Enemigo extends RecursoInterfazUsuario {
             direccion_horizontal=-1; //izquierda
 
         calculaCoordenadas();
+
+        if(tipo_enemigo == NEMESIS) {
+
+        }
+
     }
 
     public void dibujarEnemigo(Canvas canvas) {
         int iCol = pose;
         int iRow = direccion;
 
+        if(tipo_enemigo == ZOMBIE) {
+            imagen = Juego.zombie;
+            imagenEscalada = escalarImagenPantalla(imagen);
+        } else{
+            imagen = Juego.nemesis;
+            imagenEscalada = escalarImagenPantalla(imagen);
+            //sonidoNemesis();
+        }
+        
         int leftOrigen = imagenEscalada.getWidth() / 3 * iCol;
         int topOrigen = imagenEscalada.getHeight() / 4 * iRow;
         int rightOrigen = imagenEscalada.getWidth() / 3 * (iCol + 1);
@@ -78,6 +94,7 @@ public class Enemigo extends RecursoInterfazUsuario {
                 new Rect(charLeft, charTop, charRight,charBottom),
                 null);
         caminar();
+
     }
 
     public void dibujar(Canvas c, Paint p){
@@ -85,6 +102,7 @@ public class Enemigo extends RecursoInterfazUsuario {
             c.drawBitmap(Juego.zombie ,super.coordenadaX , super.coordenadaY,p);
         else
             c.drawBitmap(Juego.nemesis ,super.coordenadaX , super.coordenadaY,p);
+
     }
 
     public int getDireccion() {
@@ -161,5 +179,20 @@ public class Enemigo extends RecursoInterfazUsuario {
             return Juego.zombie;
         else
             return Juego.nemesis;
+    }
+
+    public int getTipo_enemigo() {
+        return tipo_enemigo;
+    }
+
+    public void sonidoNemesis(){
+        media= MediaPlayer.create(getContext(), R.raw.nemesisstart);
+        media.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mp.release();
+            }
+        });
+        media.start();
     }
 }
