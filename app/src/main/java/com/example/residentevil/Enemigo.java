@@ -9,31 +9,28 @@ import android.graphics.Rect;
 import android.media.MediaPlayer;
 
 public class Enemigo extends RecursoInterfazUsuario {
-    public static final int DIRECCION_ABAJO = 0;
-    public static final int DIRECCION_IZQUIERDA = 1;
-    public static final int DIRECCION_DERECHA = 2;
-    public static final int DIRECCION_ARRIBA = 3;
 
-    private int direccion = DIRECCION_IZQUIERDA;
+    private float hp;
     private int pose = 1;
     private boolean sentidoOrdinal = true;
 
     public final int NEMESIS = 0;
     public final int ZOMBIE = 1;
 
+    public final float HP_ZOMBIE=2;
+    public final float HP_NEMESIS=7;
     public final float VELOCIDAD_NEMESIS=5;
     public final float VELOCIDAD_ZOMBIE=2;
     public float velocidad;
 
     public int tipo_enemigo; //imagen del control
 
-    public float direccion_horizontal=1; //inicialmente derecha
     private int nivel;
     MediaPlayer media;
 
-    public Enemigo(Context context, int x, int y, int recurso, int nivel) {
+    public Enemigo(Context context, int x, int y, int nivel) {
 
-        super(context, x, y, recurso);
+        super(context, x, y);
         this.nivel = nivel;
         init();
     }
@@ -45,49 +42,51 @@ public class Enemigo extends RecursoInterfazUsuario {
         //probabilidad de enemigo tonto 80%, enemigo listo 20%
         if(Math.random()>0.20) {
             tipo_enemigo = ZOMBIE;
+            hp = HP_ZOMBIE;
+            if(nivel%5 == 0)
+                hp ++;
             velocidad = (VELOCIDAD_ZOMBIE+ nivel)*VELOCIDAD_ENEMIGO;
         }
         else {
             tipo_enemigo = NEMESIS;
+            hp = HP_NEMESIS;
+            if(nivel%10 == 0)
+                hp ++;
+
             velocidad = (VELOCIDAD_NEMESIS+ nivel)*VELOCIDAD_ENEMIGO;
         }
+
+        imagen = getBitmap();
+        imagenEscalada = escalarImagenPantalla(imagen);
+
 //para el enemigo tonto se calcula la dirección aleatoria
         if(Math.random()>0.5)
-            direccion_horizontal=1; //derecha
+            setDireccion(DIRECCION_DERECHA);
         else
-            direccion_horizontal=-1; //izquierda
+            setDireccion(DIRECCION_IZQUIERDA);
 
         calculaCoordenadas();
 
-        if(tipo_enemigo == NEMESIS) {
-
+        if(tipo_enemigo== NEMESIS) {
+            sonidoNemesis();
         }
-
     }
 
     public void dibujarEnemigo(Canvas canvas) {
         int iCol = pose;
         int iRow = direccion;
 
-        if(tipo_enemigo == ZOMBIE) {
-            imagen = Juego.zombie;
-            imagenEscalada = escalarImagenPantalla(imagen);
-        } else{
-            imagen = Juego.nemesis;
-            imagenEscalada = escalarImagenPantalla(imagen);
-            //sonidoNemesis();
-        }
-        
         int leftOrigen = imagenEscalada.getWidth() / 3 * iCol;
         int topOrigen = imagenEscalada.getHeight() / 4 * iRow;
         int rightOrigen = imagenEscalada.getWidth() / 3 * (iCol + 1);
         int bottomOrigen = imagenEscalada.getHeight() / 4 * (iRow + 1);
 
-        int charLeft = getCoordenadaX() - (imagenEscalada.getWidth() / 6);
-        int charTop = getCoordenadaY() - (imagenEscalada.getHeight() / 8);
-        int charRight = getCoordenadaX();
-        int charBottom = getCoordenadaY();
+        int charTop = getCoordenadaY() ;
+        int charRight = getCoordenadaX() + (imagenEscalada.getHeight() / 8);
+        int charBottom = getCoordenadaY() + (imagenEscalada.getWidth() / 6);
+        int charLeft = getCoordenadaX() ;
 
+        super.colision = new Colision(charTop,charRight,charBottom,charLeft);
 
         canvas.drawBitmap(imagenEscalada,
                 new Rect(leftOrigen, topOrigen, rightOrigen, bottomOrigen),
@@ -98,19 +97,7 @@ public class Enemigo extends RecursoInterfazUsuario {
     }
 
     public void dibujar(Canvas c, Paint p){
-        if(tipo_enemigo == ZOMBIE)
-            c.drawBitmap(Juego.zombie ,super.coordenadaX , super.coordenadaY,p);
-        else
-            c.drawBitmap(Juego.nemesis ,super.coordenadaX , super.coordenadaY,p);
-
-    }
-
-    public int getDireccion() {
-        return direccion;
-    }
-
-    public void setDireccion(int direccion) {
-        this.direccion = direccion;
+        c.drawBitmap(getBitmap() ,super.coordenadaX , super.coordenadaY,p);
     }
 
     public void caminar(){
@@ -141,44 +128,66 @@ public class Enemigo extends RecursoInterfazUsuario {
             if(x<0.125) //sale por la izquierda
                 super.coordenadaX = 0;
             else
-                super.coordenadaX = GameActivity.anchoPantalla - super.getImagen().getWidth();
-            super.coordenadaY = (int) (Math.random()*GameActivity.altoPantalla /2);
+                super.coordenadaX = GameActivity.anchoPantalla - super.getImagen().getHeight();
         }else{
             super.coordenadaX =(int)(Math.random()* (GameActivity.anchoPantalla/2 -super.getImagen().getWidth()));
-            super.coordenadaY=0;
         }
+        //Se establece que los personajes aparezcan a la altura Y base
+        super.coordenadaY = Juego.y_juego;
+
     }
 
     //Actualiza la coordenada del enemigo con respecto a la coordenada de la nave
     public void actualizaCoordenadas(Personaje jill){
         if(tipo_enemigo== NEMESIS) {
-            if (jill.getCoordenadaX() > super.coordenadaX)
+            if (jill.getCoordenadaX() > super.coordenadaX){
                 super.coordenadaX += velocidad;
-            else if (jill.getCoordenadaX() < super.coordenadaX)
+                setDireccion(DIRECCION_DERECHA);
+            }
+            else if (jill.getCoordenadaX() < super.coordenadaX){
                 super.coordenadaX -= velocidad;
+                setDireccion(DIRECCION_IZQUIERDA);
+            }
+            else if (jill.getCoordenadaY() < super.coordenadaY){
+                super.coordenadaY -= velocidad;
+                setDireccion(DIRECCION_ARRIBA);
+            }
+            else if (jill.getCoordenadaY() > super.coordenadaY){
+                super.coordenadaX += velocidad;
+                setDireccion(DIRECCION_ABAJO);
+            }
+
+            /*
             if(Math.abs(super.coordenadaX - jill.getCoordenadaX()) < velocidad)
                 super.coordenadaX = jill.getCoordenadaX(); //si está muy cerca se pone a su altura
+             */
         }
         else{
 //el enemigo tonto hace caso omiso a la posición de la nave,
 //simplemente pulula por la pantalla
-            super.coordenadaX += direccion_horizontal * velocidad;
+            super.coordenadaX += (DIRECCION_DERECHA == getDireccion() ? 1 : -1) * velocidad;
 
 //Cambios de direcciones al llegar a los bordes de la pantalla
-            if( super.coordenadaX <= 0 && direccion_horizontal == -1)
-                direccion_horizontal=1;
-            if(super.coordenadaX > (GameActivity.anchoPantalla - super.getImagen().getHeight()) && direccion_horizontal == 1){
-            direccion_horizontal=-1;
-
+            if( super.coordenadaX <= 0 && DIRECCION_IZQUIERDA == getDireccion())
+                setDireccion(DIRECCION_DERECHA);
+            if(super.coordenadaX > (GameActivity.anchoPantalla - super.getImagen().getHeight()) && DIRECCION_DERECHA == getDireccion())
+                setDireccion(DIRECCION_IZQUIERDA);
         }
     }
-}
 
-    public Bitmap bitmap(){
+    public Bitmap getBitmap(){
         if(tipo_enemigo==ZOMBIE)
             return Juego.zombie;
         else
             return Juego.nemesis;
+    }
+
+    public void damageEnemy(){
+        hp -= 1;
+    }
+
+    public boolean isDead(){
+        return hp <= 0;
     }
 
     public int getTipo_enemigo() {

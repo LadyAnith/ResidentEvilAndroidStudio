@@ -4,21 +4,18 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
 
 public class Personaje extends RecursoInterfazUsuario {
 
-    public static final int DIRECCION_ABAJO = 0;
-    public static final int DIRECCION_IZQUIERDA = 1;
-    public static final int DIRECCION_DERECHA = 2;
-    public static final int DIRECCION_ARRIBA = 3;
-
-    private int direccion = DIRECCION_DERECHA;
     private int pose = 1;
     private boolean sentidoOrdinal = true;
 
     public Personaje(Context context, int x, int y, int recurso) {
         super(context, x, y, recurso);
+        this.direccion = DIRECCION_DERECHA;
     }
 
     public void dibujarPersonaje(Canvas canvas) {
@@ -30,23 +27,18 @@ public class Personaje extends RecursoInterfazUsuario {
         int rightOrigen = imagenEscalada.getWidth() / 3 * (iCol + 1);
         int bottomOrigen = imagenEscalada.getHeight() / 4 * (iRow + 1);
 
-        int charLeft = getCoordenadaX() - (imagenEscalada.getWidth() / 6);
-        int charTop = getCoordenadaY() - (imagenEscalada.getHeight() / 8);
-        int charRight = getCoordenadaX();
-        int charBottom = getCoordenadaY();
+        //Ajusto la imagen al tamaño correspondiente
+        int charTop = getCoordenadaY() ;
+        int charRight = getCoordenadaX() + (imagenEscalada.getHeight() / 8);
+        int charBottom = getCoordenadaY() + (imagenEscalada.getWidth() / 6);
+        int charLeft = getCoordenadaX() ;
+
+        super.colision = new Colision(charTop,charRight,charBottom,charLeft);
 
         canvas.drawBitmap(imagenEscalada,
                 new Rect(leftOrigen, topOrigen, rightOrigen, bottomOrigen),
                 new Rect(charLeft, charTop, charRight,charBottom),
                 null);
-    }
-
-    public int getDireccion() {
-        return direccion;
-    }
-
-    public void setDireccion(int direccion) {
-        this.direccion = direccion;
     }
 
     public void caminar(){

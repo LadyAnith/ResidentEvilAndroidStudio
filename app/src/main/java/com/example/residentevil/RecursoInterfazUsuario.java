@@ -13,17 +13,36 @@ abstract class RecursoInterfazUsuario extends View {
     protected Bitmap imagenEscalada;
     protected int recurso;
 
+    public static final int DIRECCION_ABAJO = 0;
+    public static final int DIRECCION_IZQUIERDA = 1;
+    public static final int DIRECCION_DERECHA = 2;
+    public static final int DIRECCION_ARRIBA = 3;
+
+    protected int direccion = DIRECCION_IZQUIERDA;
+
+    protected Colision colision;
+
     public RecursoInterfazUsuario(Context context, int x, int y, int recurso) {
         super(context);
         init(x, y, recurso);
     }
 
-    public void init(int x, int y, int recurso) {
-        coordenadaX = x;
-        coordenadaY = y;
-        recurso = recurso;
-        imagen = BitmapFactory.decodeResource(getResources(), recurso);
-        imagenEscalada = escalarImagenPantalla(imagen);
+    public RecursoInterfazUsuario(Context context, int x, int y) {
+        super(context);
+        init(x, y, null);
+    }
+
+
+    public void init(int x, int y, Integer recurso) {
+        this.coordenadaX = x;
+        this.coordenadaY = y;
+        this.colision = new Colision(0,0,0,0);
+
+        if (recurso != null){
+            this.recurso = recurso;
+            this.imagen = BitmapFactory.decodeResource(getResources(), recurso);
+            this.imagenEscalada = escalarImagenPantalla(imagen);
+        }
     }
 
     public int getCoordenadaX() {
@@ -66,6 +85,14 @@ abstract class RecursoInterfazUsuario extends View {
         this.recurso = recurso;
     }
 
+    public int getDireccion() {
+        return direccion;
+    }
+
+    public void setDireccion(int direccion) {
+        this.direccion = direccion;
+    }
+
     public void dibujar(Canvas c, Paint p) {
         c.drawBitmap(imagen, coordenadaX, coordenadaY, p);
     }
@@ -74,4 +101,11 @@ abstract class RecursoInterfazUsuario extends View {
         return Bitmap.createScaledBitmap(imagenOrigen, GameActivity.altoPantalla, GameActivity.anchoPantalla, true);
     }
 
+    public Colision getColision() {
+        return colision;
+    }
+
+    public void setColision(Colision colision) {
+        this.colision = colision;
+    }
 }

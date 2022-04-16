@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.media.MediaPlayer;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -29,14 +30,13 @@ public class Juego extends SurfaceView implements SurfaceHolder.Callback, Surfac
     //Contador de frames
     private int contadorFrames = 0;
 
+    public static int y_juego = GameActivity.altoPantalla / 10 * 7; //Indica la altura a la que irán los elementos
+
     Controles controlesJuego;
 
     //Actores
     private Fondo fondo;
     private Personaje jill;
-    private Enemigo enemigo;
-    private Disparo disparo;
-
 
     /*Array de Touch */
     private ArrayList<Click> toques = new ArrayList();
@@ -56,12 +56,12 @@ public class Juego extends SurfaceView implements SurfaceHolder.Callback, Surfac
 
     /* sonidos */
     MediaPlayer mediaPlayer;
-    private MediaPlayer media;
 
     /* Enemigos */
     public static Bitmap zombie, nemesis;
-    public final int TOTAL_ENEMIGOS=500; //Enemigos para acabar el juego
-    private int enemigos_minuto=50; //número de enemigos por minuto
+    public final int TOTAL_ENEMIGOS=200; //Enemigos para acabar el juego
+    public final int MAX_ENEMIGOS=7; //Enemigos maximos en pantalla
+    private int enemigos_minuto=20; //número de enemigos por minuto
     private int frames_para_nuevo_enemigo=0; //frames que restan hasta generar nuevo enemigo
     private int enemigos_muertos=0; //Contador de enemigos muertos
     private int enemigos_creados=0;
@@ -95,7 +95,7 @@ public class Juego extends SurfaceView implements SurfaceHolder.Callback, Surfac
             actualizar();
 
             for(Disparo d:lista_disparos){
-                d.dibujar(canvas,myPaint);
+                d.dibujar(canvas);
             }
 
             //dibuja los enemigos
@@ -119,7 +119,7 @@ public class Juego extends SurfaceView implements SurfaceHolder.Callback, Surfac
         //Aquí se cargan las cosas visuales
         fondo = new Fondo(getContext());
         controlesJuego = new Controles(getContext());
-        jill = new Personaje(getContext(), GameActivity.anchoPantalla / 10 * 3, GameActivity.altoPantalla / 10 * 8, R.drawable.jill);
+        jill = new Personaje(getContext(), GameActivity.anchoPantalla / 10 * 3, y_juego, R.drawable.jill);
         //zombie = new Enemigo(getContext(), GameActivity.anchoPantalla / 10 * 9, GameActivity.altoPantalla / 10 * 8, R.drawable.nemesis, 1);
 
         // creamos el game loop
@@ -209,7 +209,6 @@ public class Juego extends SurfaceView implements SurfaceHolder.Callback, Surfac
                 jill.setCoordenadaX((int) (jill.getCoordenadaX() - VELOCIDAD_HORIZONTAL));
             jill.setDireccion(Personaje.DIRECCION_IZQUIERDA);
             jill.caminar();
-
         }
 
         //Jill se mueve a la derecha
@@ -230,26 +229,44 @@ public class Juego extends SurfaceView implements SurfaceHolder.Callback, Surfac
 
         //Jill dispara
         if (controlesJuego.getBotones().get("shoot").isPulsado()) {
-                /* Disparo */
-                nuevo_disparo = true;
-                if (frames_para_nuevo_disparo == 0) {
-                    if (nuevo_disparo) {
-                        creaDisparo();
-                        nuevo_disparo = false;
-                    }
-//nuevo ciclo de disparos
-                    frames_para_nuevo_disparo = MAX_FRAMES_ENTRE_DISPARO;
+            /* Disparo */
+            nuevo_disparo = true;
+            if (frames_para_nuevo_disparo == 0) {
+                if (nuevo_disparo) {
+                    creaDisparo();
+                    nuevo_disparo = false;
                 }
-                frames_para_nuevo_disparo--;
-                jill.caminar();
+//nuevo ciclo de disparos
+                frames_para_nuevo_disparo = MAX_FRAMES_ENTRE_DISPARO;
+            }
+        }
+        if (frames_para_nuevo_disparo > 0) {
+            frames_para_nuevo_disparo--;
+        }
+        //Los disparos se mueven
+        for (Iterator<Disparo> it_disparos = lista_disparos.iterator(); it_disparos.hasNext(); ) {
+            boolean golpeado = false;
+            Disparo d = it_disparos.next();
+            d.actualizaCoordenadas();
+            if (d.fueraDePantalla()) {
+                it_disparos.remove();
+                golpeado = true;
+            }
 
+            if (golpeado) continue;
 
-            //Los disparos se mueven
-            for (Iterator<Disparo> it_disparos = lista_disparos.iterator(); it_disparos.hasNext(); ) {
-                Disparo d = it_disparos.next();
-                d.actualizaCoordenadas();
-                if (d.fueraDePantalla()) {
+            for(Iterator<Enemigo> it_enemigos = lista_enemigos.iterator();it_enemigos.hasNext() && !golpeado; ){
+
+                Enemigo e = it_enemigos.next();
+                if (d.getColision().isColision(e.getColision())){
+                    golpeado = true;
                     it_disparos.remove();
+                    e.damageEnemy();
+                    if (e.isDead()) {
+                        it_enemigos.remove();
+                        enemigos_muertos++;
+                        nivel ++;
+                    }
                 }
             }
         }
@@ -262,18 +279,19 @@ public class Juego extends SurfaceView implements SurfaceHolder.Callback, Surfac
         }
         frames_para_nuevo_enemigo--;
 
-        //Los enemigos persiguen al jugador
+        //Los enemigos persiguen al jugador y se comprueban las colisiones
         for(Enemigo e: lista_enemigos){
             e.actualizaCoordenadas(jill);
-            if(e.getTipo_enemigo() == 0){
 
+            if (e.getColision().isColision(jill.getColision())){
+                Log.d("info","GOLPE A JILL");
             }
         }
 
     }
 
     public void creaDisparo(){
-        lista_disparos.add(new Disparo(getContext(),jill.getCoordenadaX(),jill.getCoordenadaY(), R.drawable.bala,jill));
+        lista_disparos.add(new Disparo(getContext(),jill, R.drawable.bala));
     }
 
     private void iniciarMusicaJuego(){
@@ -297,8 +315,8 @@ public class Juego extends SurfaceView implements SurfaceHolder.Callback, Surfac
     }
 
     public void crearNuevoEnemigo(){
-        if(TOTAL_ENEMIGOS-enemigos_creados>0) {
-            lista_enemigos.add(new Enemigo(getContext(), GameActivity.anchoPantalla / 2 * 10, GameActivity.altoPantalla - zombie.getHeight(), R.drawable.zombie, nivel));
+        if(TOTAL_ENEMIGOS-enemigos_creados>0 && lista_enemigos.size() < MAX_ENEMIGOS) {
+            lista_enemigos.add(new Enemigo(getContext(), GameActivity.anchoPantalla / 2 * 10, y_juego, nivel));
             enemigos_creados++;
         }
     }
