@@ -28,17 +28,19 @@ public class GameActivity extends AppCompatActivity {
         calculaTamañoPantalla();
         j = new Juego(this);
         setContentView(j);
+        //Pantalla en posición horizontal
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         hideSystemUI();
 
 
     }
 
-    // This snippet hides the system bars.
+    /**
+     * Método encargado de ocultar los elementos de la interfaz
+     */
     private void hideSystemUI() {
 
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.HONEYCOMB) {
-            //A partir de kitkat
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.HONEYCOMB) {
             j.setSystemUiVisibility(
                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                             | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -46,8 +48,6 @@ public class GameActivity extends AppCompatActivity {
                             | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
                             | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                             | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-            //cuando se presiona volumen, por ej, se cambia la visibilidad, hay que volver
-            //a ocultar
             j.setOnSystemUiVisibilityChangeListener(new
                                                             View.OnSystemUiVisibilityChangeListener() {
                                                                 @Override
@@ -58,6 +58,9 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Método encargado de calcular el alto y ancho de la pantalla del dispositivo
+     */
     public void calculaTamañoPantalla() {
         if (Build.VERSION.SDK_INT > 13) {
             Display display = getWindowManager().getDefaultDisplay();
@@ -67,8 +70,8 @@ public class GameActivity extends AppCompatActivity {
             altoPantalla = size.y;
         } else {
             Display display = getWindowManager().getDefaultDisplay();
-            anchoPantalla = display.getWidth(); // deprecated
-            altoPantalla = display.getHeight(); // deprecated
+            anchoPantalla = display.getWidth();
+            altoPantalla = display.getHeight();
         }
     }
 }

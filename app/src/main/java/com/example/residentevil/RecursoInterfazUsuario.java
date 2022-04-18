@@ -7,12 +7,16 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.view.View;
 
+/**
+ * Clase abstracta que contiene atributos comunes y hereda de la clase View
+ */
 abstract class RecursoInterfazUsuario extends View {
     protected int coordenadaX, coordenadaY;
     protected Bitmap imagen;
     protected Bitmap imagenEscalada;
     protected int recurso;
 
+    //Atributos estáticos con las posiciones de las imágenes del spriter
     public static final int DIRECCION_ABAJO = 0;
     public static final int DIRECCION_IZQUIERDA = 1;
     public static final int DIRECCION_DERECHA = 2;
@@ -22,22 +26,43 @@ abstract class RecursoInterfazUsuario extends View {
 
     protected Colision colision;
 
+    /**
+     * Método constructor con recurso
+     * @param context
+     * @param x
+     * @param y
+     * @param recurso
+     */
     public RecursoInterfazUsuario(Context context, int x, int y, int recurso) {
         super(context);
         init(x, y, recurso);
     }
 
+    /**
+     * Método constructor sin el recurso
+     * @param context
+     * @param x
+     * @param y
+     */
     public RecursoInterfazUsuario(Context context, int x, int y) {
         super(context);
         init(x, y, null);
     }
 
 
+    /**
+     *Método encargado de inicializar las coordenadas y la iamgen
+     *
+     * @param x de tipo int
+     * @param y de tipo int
+     * @param recurso de la clase Integer
+     */
     public void init(int x, int y, Integer recurso) {
         this.coordenadaX = x;
         this.coordenadaY = y;
         this.colision = new Colision(0,0,0,0);
 
+        //Si el recurso es diferente a null, guarda la imagen en el bitmap, y la escala con el método escalrImagenpantalla()
         if (recurso != null){
             this.recurso = recurso;
             this.imagen = BitmapFactory.decodeResource(getResources(), recurso);
@@ -45,6 +70,7 @@ abstract class RecursoInterfazUsuario extends View {
         }
     }
 
+    //Getter & Setter
     public int getCoordenadaX() {
         return coordenadaX;
     }
@@ -93,14 +119,6 @@ abstract class RecursoInterfazUsuario extends View {
         this.direccion = direccion;
     }
 
-    public void dibujar(Canvas c, Paint p) {
-        c.drawBitmap(imagen, coordenadaX, coordenadaY, p);
-    }
-
-    public Bitmap escalarImagenPantalla(Bitmap imagenOrigen) {
-        return Bitmap.createScaledBitmap(imagenOrigen, GameActivity.altoPantalla, GameActivity.anchoPantalla, true);
-    }
-
     public Colision getColision() {
         return colision;
     }
@@ -108,4 +126,23 @@ abstract class RecursoInterfazUsuario extends View {
     public void setColision(Colision colision) {
         this.colision = colision;
     }
+
+    /**
+     * Método encargado de pintar la imagen en las determinadas coordenadas
+     * @param c se le pasa un Objeto Canvas como parámetro
+     * @param p se le pasa un objeto de la clase Paint como parámetro
+     */
+    public void dibujar(Canvas c, Paint p) {
+        c.drawBitmap(imagen, coordenadaX, coordenadaY, p);
+    }
+
+    /**
+     * Método encargado de ajustar la imagen de un Bitmap a la pantalla del dispositivo
+     * @param imagenOrigen como parámetro se le pasa el bitmap que queremos escalar
+     * @return devuelve un Bitmap escalado
+     */
+    public Bitmap escalarImagenPantalla(Bitmap imagenOrigen) {
+        return Bitmap.createScaledBitmap(imagenOrigen, GameActivity.altoPantalla, GameActivity.anchoPantalla, true);
+    }
+
 }

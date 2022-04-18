@@ -26,36 +26,43 @@ public class MainActivity extends AppCompatActivity {
         //Botón que nos llevará a la aplicación principal
         boton = (Button) findViewById(R.id.button);
         animarBoton();
-        coloricos();
         boton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //Con el evento onClick, llamo a la actividad del juego
                 Intent i = new Intent(getApplicationContext(), GameActivity.class);
                 startActivity(i);
+                //Se detiene la música
                 mediaPlayer.stop();mediaPlayer.reset();
             }
         });
     }
 
+    /**
+     * Método encargado de animar el botón de inicio
+     */
     public void animarBoton(){
         AnimatorSet animadorBoton = new AnimatorSet();
+        //Movimientos del botón hacia abajo
         ObjectAnimator animacionMovimiento = ObjectAnimator.ofFloat(boton, "Y", 500);
+        //Duración de la animación
         animacionMovimiento.setDuration(4000);
+        //El botón rebota al llegar a un punto
         animacionMovimiento.setInterpolator(new BounceInterpolator());
 
+        //Animación que hacer que el botón cambie de color
         ObjectAnimator animacionColor = ObjectAnimator.ofObject(boton, "backgroundColor", new ArgbEvaluator(),
                 /*Red*/0xFFFF8080, /*Blue*/0xFF8080FF)
                 .setDuration(4000);
+        //Al ser dos animaciones las que quiero llevar a cabo, he de llamarlas con el .play y después añadiendo el .with
         animadorBoton.play(animacionMovimiento).with(animacionColor);
+        //Comienza la aplicación
         animadorBoton.start();
     }
 
-    public void coloricos(){
-        ObjectAnimator.ofObject(boton, "backgroundColor", new ArgbEvaluator(),
-                /*Red*/0xFFFF8080, /*Blue*/0xFF8080FF)
-                .setDuration(2000);
-    }
-
+    /**
+     * Método encargado de iniciar la música al comenzar el juego
+     */
     public void iniciaMusicaIntro(){
         mediaPlayer = MediaPlayer.create(this, R.raw.freefromfear);
         mediaPlayer.setVolume(0.5f,0.5f);
@@ -68,6 +75,9 @@ public class MainActivity extends AppCompatActivity {
         mediaPlayer.start();
     }
 
+    /**
+     * Método que detiene la música del juego
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();
